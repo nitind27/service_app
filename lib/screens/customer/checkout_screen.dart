@@ -9,6 +9,7 @@ import '../../providers/wallet_provider.dart';
 import '../../config/app_theme.dart';
 import '../../config/price_formatter.dart';
 import 'booking_confirmation_screen.dart';
+import 'coupons_sheet.dart';
 
 class CheckoutScreen extends StatefulWidget {
   final ServiceModel service;
@@ -44,6 +45,39 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   bool _useWallet = false;
   String _paymentMode = 'cod'; // 'cod' or 'cashfree'
+  String? _appliedCouponCode;
+  double _couponDiscount = 0.0;
+
+  void _applyCoupon(String code) {
+    double discount = 0.0;
+    final upper = code.toUpperCase();
+    if (upper.contains('200')) {
+      discount = 200.0;
+    } else if (upper.contains('500')) {
+      discount = 500.0;
+    } else if (upper.contains('50')) {
+      discount = 50.0;
+    } else {
+      discount = 150.0;
+    }
+    setState(() {
+      _appliedCouponCode = upper;
+      _couponDiscount = discount;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Coupon $upper applied! ₹${discount.toInt()} discount added.'),
+        backgroundColor: AppTheme.successGreen,
+      ),
+    );
+  }
+
+  void _removeCoupon() {
+    setState(() {
+      _appliedCouponCode = null;
+      _couponDiscount = 0.0;
+    });
+  }
 
   @override
   void initState() {
@@ -103,6 +137,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       bookingDate: DateFormat('yyyy-MM-dd').format(_selectedDate),
       timeSlot: _selectedTimeSlot,
       specialInstructions: _instructionsController.text.trim(),
+      couponCode: _appliedCouponCode,
       useWallet: _useWallet,
       paymentMode: _paymentMode,
     );
@@ -146,9 +181,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         ? widget.selectedVariant!.price
         : widget.service.effectivePrice;
 
-    final tax = (basePrice * 0.05);
+    final effectiveDiscount = _couponDiscount > basePrice ? basePrice : _couponDiscount;
+    final discountedBase = (basePrice - effectiveDiscount).clamp(0.0, double.infinity);
+    final tax = (discountedBase * 0.05);
     const convenienceFee = 49.0;
-    final grossTotal = basePrice + tax + convenienceFee;
+    final grossTotal = discountedBase + tax + convenienceFee;
 
     double walletDeduction = 0.0;
     if (_useWallet && wallet.balance > 0) {
@@ -301,9 +338,97 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 ],
               ),
               const SizedBox(height: 24),
-              // Section 3: Wallet & Payment Method
-              const Text('3. Payment & Wallet Discount', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
-              const SizedBox(height: 10),
+              // Section 3: Coupon Discount & Wallet
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('3. Offers & Payment', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+                  TextButton.icon(
+                    onPressed: () => CouponsSheet.show(context, onSelect: _applyCoupon),
+                    icon: const Icon(Icons.local_offer_outlined, size: 16),
+                    label: const Text('View Coupons', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+
+              // Applied Coupon / Apply Coupon Bar
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                decoration: BoxDecoration(
+                  color: _appliedCouponCode != null ? const Color(0xFFEFF6FF) : Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: _appliedCouponCode != null ? const Color(0xFF60A5FA) : AppTheme.borderColor,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      _appliedCouponCode != null ? Icons.check_circle_rounded : Icons.local_offer_rounded,
+                      color: _appliedCouponCode != null ? AppTheme.primaryBlue : AppTheme.accentOrange,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _appliedCouponCode != null
+                          ? Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      _appliedCouponCode!,
+                                      style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, color: AppTheme.primaryBlue),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFDCFCE7),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Text(
+                                        'SAVED ₹${_couponDiscount.toInt()}',
+                                        style: const TextStyle(fontSize: 9.5, fontWeight: FontWeight.w800, color: Color(0xFF15803D)),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 2),
+                                const Text(
+                                  'Special promotional discount applied at checkout',
+                                  style: TextStyle(fontSize: 11, color: AppTheme.textMedium),
+                                ),
+                              ],
+                            )
+                          : const Text(
+                              'Have a coupon code?',
+                              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.textDark),
+                            ),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        if (_appliedCouponCode != null) {
+                          _removeCoupon();
+                        } else {
+                          CouponsSheet.show(context, onSelect: _applyCoupon);
+                        }
+                      },
+                      child: Text(
+                        _appliedCouponCode != null ? 'Remove' : 'Select',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 12,
+                          color: _appliedCouponCode != null ? AppTheme.dangerRed : AppTheme.primaryBlue,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+
               // Wallet balance toggle
               Container(
                 padding: const EdgeInsets.all(12),
@@ -380,6 +505,16 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         Text(PriceFormatter.format(basePrice), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
                       ],
                     ),
+                    if (effectiveDiscount > 0) ...[
+                      const SizedBox(height: 6),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Coupon Discount (${_appliedCouponCode ?? ''})', style: const TextStyle(fontSize: 13, color: AppTheme.successGreen, fontWeight: FontWeight.w600)),
+                          Text('- ${PriceFormatter.format(effectiveDiscount)}', style: const TextStyle(fontSize: 13, color: AppTheme.successGreen, fontWeight: FontWeight.w700)),
+                        ],
+                      ),
+                    ],
                     const SizedBox(height: 6),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,

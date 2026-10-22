@@ -8,6 +8,9 @@ import '../../config/price_formatter.dart';
 import '../../widgets/status_badge.dart';
 import '../chat/booking_chat_screen.dart';
 import '../auth/login_screen.dart';
+import 'live_tracking_sheet.dart';
+import 'warranty_dialog.dart';
+import 'review_dialog.dart';
 
 class CustomerBookingsScreen extends StatefulWidget {
   const CustomerBookingsScreen({super.key});
@@ -281,6 +284,73 @@ class _CustomerBookingsScreenState extends State<CustomerBookingsScreen> with Si
                     ],
                   ),
                 ),
+                const SizedBox(height: 8),
+                InkWell(
+                  onTap: () => LiveTrackingSheet.show(context, b),
+                  borderRadius: BorderRadius.circular(10),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEFF6FF),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: const Color(0xFFBFDBFE)),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(Icons.near_me_rounded, color: AppTheme.primaryBlue, size: 18),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Technician en route • Tap to Live Track',
+                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppTheme.primaryBlue),
+                          ),
+                        ),
+                        Icon(Icons.chevron_right_rounded, color: AppTheme.primaryBlue, size: 18),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+              // 30-Day Free Warranty Guarantee if completed
+              if (b.bookingStatus == 'completed') ...[
+                const SizedBox(height: 10),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF0FDF4),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFBBF7D0)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.verified_user_rounded, color: Color(0xFF16A34A), size: 16),
+                      const SizedBox(width: 8),
+                      const Expanded(
+                        child: Text(
+                          'Protected by 30-Day Free Guarantee',
+                          style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: Color(0xFF166534)),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          WarrantyClaimDialog.show(
+                            context,
+                            bookingId: b.id,
+                            bookingNumber: b.bookingNumber,
+                            serviceTitle: b.serviceTitle,
+                            onClaimed: () => context.read<BookingProvider>().fetchBookings(),
+                          );
+                        },
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        child: const Text('Claim Rework', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800, color: Color(0xFF15803D))),
+                      ),
+                    ],
+                  ),
+                ),
               ],
               const SizedBox(height: 14),
               // Amount and Actions Row
@@ -299,6 +369,40 @@ class _CustomerBookingsScreenState extends State<CustomerBookingsScreen> with Si
                   ),
                   Row(
                     children: [
+                      if (b.isActive) ...[
+                        OutlinedButton.icon(
+                          onPressed: () => LiveTrackingSheet.show(context, b),
+                          icon: const Icon(Icons.near_me_rounded, size: 14),
+                          label: const Text('Track', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppTheme.primaryBlue,
+                            side: const BorderSide(color: Color(0xFF93C5FD)),
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            minimumSize: Size.zero,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                      ],
+                      if (b.bookingStatus == 'completed') ...[
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            ReviewDialog.show(
+                              context,
+                              bookingId: b.id,
+                              serviceTitle: b.serviceTitle,
+                              onSubmitted: () => context.read<BookingProvider>().fetchBookings(),
+                            );
+                          },
+                          icon: const Icon(Icons.star_rounded, size: 14, color: Colors.amber),
+                          label: const Text('Rate', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.primaryBlue,
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            minimumSize: Size.zero,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                      ],
                       // Chat Button
                       IconButton(
                         icon: const Icon(Icons.chat_bubble_outline_rounded, color: AppTheme.primaryBlue),
@@ -323,7 +427,8 @@ class _CustomerBookingsScreenState extends State<CustomerBookingsScreen> with Si
                           style: OutlinedButton.styleFrom(
                             foregroundColor: AppTheme.dangerRed,
                             side: const BorderSide(color: Color(0xFFFECDD3)),
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            minimumSize: Size.zero,
                           ),
                           child: const Text('Cancel', style: TextStyle(fontSize: 12)),
                         ),
