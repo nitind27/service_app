@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/wallet_provider.dart';
 import '../../config/app_theme.dart';
+import '../../config/price_formatter.dart';
 import '../auth/login_screen.dart';
 
 class WalletScreen extends StatefulWidget {
@@ -191,7 +192,7 @@ class _WalletScreenState extends State<WalletScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      '₹${wallet.balance.toStringAsFixed(2)}',
+                      PriceFormatter.formatWithDecimals(wallet.balance),
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 34,
@@ -292,7 +293,7 @@ class _WalletScreenState extends State<WalletScreen> {
                         style: const TextStyle(fontSize: 11, color: AppTheme.textMedium),
                       ),
                       trailing: Text(
-                        '${tx.isCredit ? '+' : '-'}₹${tx.amount.toStringAsFixed(2)}',
+                        '${tx.isCredit ? '+' : '-'} ${PriceFormatter.formatWithDecimals(tx.amount)}',
                         style: TextStyle(
                           fontWeight: FontWeight.w800,
                           fontSize: 14,

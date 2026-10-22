@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../config/app_theme.dart';
+import '../../config/price_formatter.dart';
 import 'main_nav_screen.dart';
 
 class BookingConfirmationScreen extends StatelessWidget {
@@ -167,7 +168,7 @@ class BookingConfirmationScreen extends StatelessWidget {
                     const SizedBox(height: 8),
                     _InfoRow(label: 'Address', value: address),
                     const SizedBox(height: 8),
-                    _InfoRow(label: 'Total Amount', value: '₹${totalAmount.toStringAsFixed(2)}'),
+                    _InfoRow(label: 'Total Amount', value: PriceFormatter.format(totalAmount)),
                   ],
                 ),
               ),

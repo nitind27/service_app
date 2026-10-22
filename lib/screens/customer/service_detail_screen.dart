@@ -6,6 +6,7 @@ import '../../providers/service_provider.dart';
 import '../../providers/location_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../config/app_theme.dart';
+import '../../config/price_formatter.dart';
 import 'checkout_screen.dart';
 import '../auth/login_screen.dart';
 
@@ -80,7 +81,6 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
 
     final auth = context.read<AuthProvider>();
     if (!auth.isAuthenticated) {
-      // Prompt user to login or continue
       Navigator.push(
         context,
         MaterialPageRoute(builder: (_) => const LoginScreen()),
@@ -121,18 +121,19 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
         : _service!.effectivePrice;
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
       body: CustomScrollView(
         slivers: [
           // Collapsible Image Header
           SliverAppBar(
-            expandedHeight: 250,
+            expandedHeight: 240,
             pinned: true,
             leading: Container(
               margin: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: Colors.white,
                 shape: BoxShape.circle,
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4)],
+                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.12), blurRadius: 4)],
               ),
               child: IconButton(
                 icon: const Icon(Icons.arrow_back, color: AppTheme.primaryBlue, size: 20),
@@ -147,7 +148,8 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
               ),
             ),
           ),
-          // Content
+
+          // Content Body
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(20),
@@ -163,6 +165,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                         decoration: BoxDecoration(
                           color: const Color(0xFFEFF6FF),
                           borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: const Color(0xFFDBEAFE)),
                         ),
                         child: Text(
                           _service!.categoryName,
@@ -184,43 +187,122 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                           const SizedBox(width: 4),
                           Text(
                             '(${_service!.totalReviews > 0 ? _service!.totalReviews : 84} reviews)',
-                            style: const TextStyle(color: AppTheme.textMedium, fontSize: 12),
+                            style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
                           ),
                         ],
                       ),
                     ],
                   ),
                   const SizedBox(height: 12),
-                  // Title
+
+                  // Service Title
                   Text(
                     _service!.title,
                     style: const TextStyle(
                       fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                      color: AppTheme.textDark,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xFF0F172A),
                       height: 1.25,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
+
                   // Duration Pill
                   Row(
                     children: [
-                      const Icon(Icons.schedule_rounded, size: 16, color: AppTheme.textMedium),
+                      const Icon(Icons.schedule_rounded, size: 16, color: Color(0xFF64748B)),
                       const SizedBox(width: 6),
                       Text(
                         'Standard Duration: ${_service!.durationMinutes} Minutes',
-                        style: const TextStyle(fontSize: 13, color: AppTheme.textMedium, fontWeight: FontWeight.w500),
+                        style: const TextStyle(fontSize: 13, color: Color(0xFF64748B), fontWeight: FontWeight.w500),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
+
+                  // PROMINENT PRICING & SAVINGS BANNER (Fixed Price Visibility)
+                  Container(
+                    margin: const EdgeInsets.symmetric(vertical: 16),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFEFF6FF), Color(0xFFDBEAFE)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFFBFDBFE)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.baseline,
+                          textBaseline: TextBaseline.alphabetic,
+                          children: [
+                            Text(
+                              PriceFormatter.format(effectivePrice),
+                              style: const TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.w900,
+                                color: AppTheme.primaryBlue,
+                                letterSpacing: -0.5,
+                              ),
+                            ),
+                            if (_service!.hasDiscount && _selectedVariant == null) ...[
+                              const SizedBox(width: 10),
+                              Text(
+                                PriceFormatter.format(_service!.basePrice),
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  color: Color(0xFF94A3B8),
+                                  decoration: TextDecoration.lineThrough,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFDCFCE7),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(color: const Color(0xFF86EFAC)),
+                                ),
+                                child: Text(
+                                  '${_service!.discountPercentage}% OFF',
+                                  style: const TextStyle(
+                                    color: Color(0xFF166534),
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        const Row(
+                          children: [
+                            Icon(Icons.verified_outlined, size: 15, color: Color(0xFF059669)),
+                            SizedBox(width: 5),
+                            Expanded(
+                              child: Text(
+                                'Doorstep service inspection, GST taxes & technician warranty included',
+                                style: TextStyle(fontSize: 11.5, color: Color(0xFF065F46), fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+
                   // Pincode SLA Turnaround Checker
                   Container(
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF8FAFC),
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: AppTheme.borderColor),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -294,6 +376,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
+
                   // Variants / Packages Selector
                   if (_service!.variants.isNotEmpty) ...[
                     const Text(
@@ -313,7 +396,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                               color: isSelected ? const Color(0xFFEFF6FF) : Colors.white,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: isSelected ? AppTheme.primaryBlue : AppTheme.borderColor,
+                                color: isSelected ? AppTheme.primaryBlue : const Color(0xFFE2E8F0),
                                 width: isSelected ? 1.8 : 1,
                               ),
                             ),
@@ -321,7 +404,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                               children: [
                                 Icon(
                                   isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
-                                  color: isSelected ? AppTheme.primaryBlue : AppTheme.textLight,
+                                  color: isSelected ? AppTheme.primaryBlue : const Color(0xFF94A3B8),
                                   size: 20,
                                 ),
                                 const SizedBox(width: 12),
@@ -334,23 +417,23 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                                         style: TextStyle(
                                           fontWeight: FontWeight.w700,
                                           fontSize: 14,
-                                          color: isSelected ? AppTheme.primaryBlue : AppTheme.textDark,
+                                          color: isSelected ? AppTheme.primaryBlue : const Color(0xFF0F172A),
                                         ),
                                       ),
                                       if (v.description != null && v.description!.isNotEmpty)
                                         Text(
                                           v.description!,
-                                          style: const TextStyle(fontSize: 11, color: AppTheme.textMedium),
+                                          style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
                                         ),
                                     ],
                                   ),
                                 ),
                                 Text(
-                                  '₹${v.price.toStringAsFixed(0)}',
+                                  PriceFormatter.format(v.price),
                                   style: TextStyle(
-                                    fontWeight: FontWeight.w800,
+                                    fontWeight: FontWeight.w900,
                                     fontSize: 16,
-                                    color: isSelected ? AppTheme.primaryBlue : AppTheme.textDark,
+                                    color: isSelected ? AppTheme.primaryBlue : const Color(0xFF0F172A),
                                   ),
                                 ),
                               ],
@@ -361,7 +444,8 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                     ),
                     const SizedBox(height: 20),
                   ],
-                  // Description
+
+                  // Description Overview
                   const Text(
                     'Service Overview',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
@@ -371,9 +455,10 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                     _service!.description.isNotEmpty
                         ? _service!.description
                         : _service!.shortDescription,
-                    style: const TextStyle(fontSize: 14, color: AppTheme.textMedium, height: 1.5),
+                    style: const TextStyle(fontSize: 14, color: Color(0xFF475569), height: 1.5),
                   ),
                   const SizedBox(height: 24),
+
                   // Key Inclusions & Safety Badges
                   const Text(
                     'The JeevanSeva Doorstep Promise',
@@ -404,7 +489,8 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
           ),
         ],
       ),
-      // Sticky Bottom Booking Bar
+
+      // Sticky Bottom Booking Bar with Generous Layout
       bottomNavigationBar: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
         decoration: BoxDecoration(
@@ -420,34 +506,45 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
         child: SafeArea(
           child: Row(
             children: [
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Total Payable',
-                    style: TextStyle(fontSize: 11, color: AppTheme.textLight, fontWeight: FontWeight.w600),
-                  ),
-                  Text(
-                    '₹${effectivePrice.toStringAsFixed(0)}',
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w900,
-                      color: AppTheme.primaryBlue,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(width: 20),
               Expanded(
+                flex: 4,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Total Payable',
+                      style: TextStyle(fontSize: 11, color: Color(0xFF64748B), fontWeight: FontWeight.w600),
+                    ),
+                    Text(
+                      PriceFormatter.format(effectivePrice),
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w900,
+                        color: AppTheme.primaryBlue,
+                        letterSpacing: -0.5,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                flex: 6,
                 child: SizedBox(
                   height: 48,
-                  child: ElevatedButton(
+                  child: ElevatedButton.icon(
                     onPressed: _proceedToCheckout,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.accentOrange,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      elevation: 1,
                     ),
-                    child: const Text('Book Service Now', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
+                    icon: const Icon(Icons.bolt_rounded, size: 20),
+                    label: const Text('Book Service Now', style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w800)),
                   ),
                 ),
               ),
@@ -488,9 +585,9 @@ class _FeatureBullet extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppTheme.textDark)),
+              Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF0F172A))),
               const SizedBox(height: 2),
-              Text(subtitle, style: const TextStyle(fontSize: 12, color: AppTheme.textMedium)),
+              Text(subtitle, style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
             ],
           ),
         ),

@@ -4,6 +4,7 @@ import '../../models/booking_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/booking_provider.dart';
 import '../../config/app_theme.dart';
+import '../../config/price_formatter.dart';
 import '../../widgets/status_badge.dart';
 import '../chat/booking_chat_screen.dart';
 import '../auth/login_screen.dart';
@@ -291,7 +292,7 @@ class _CustomerBookingsScreenState extends State<CustomerBookingsScreen> with Si
                     children: [
                       const Text('Total Amount', style: TextStyle(fontSize: 11, color: AppTheme.textLight)),
                       Text(
-                        '₹${b.totalAmount.toStringAsFixed(2)}',
+                        PriceFormatter.format(b.totalAmount),
                         style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: AppTheme.primaryBlue),
                       ),
                     ],

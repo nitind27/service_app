@@ -7,6 +7,7 @@ import '../../providers/location_provider.dart';
 import '../../providers/booking_provider.dart';
 import '../../providers/wallet_provider.dart';
 import '../../config/app_theme.dart';
+import '../../config/price_formatter.dart';
 import 'booking_confirmation_screen.dart';
 
 class CheckoutScreen extends StatefulWidget {
@@ -204,7 +205,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       ),
                     ),
                     Text(
-                      '₹${basePrice.toStringAsFixed(0)}',
+                      PriceFormatter.format(basePrice),
                       style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: AppTheme.primaryBlue),
                     ),
                   ],
@@ -334,7 +335,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             ),
                           ),
                           Text(
-                            'Available Balance: ₹${wallet.balance.toStringAsFixed(2)}',
+                            'Available Balance: ${PriceFormatter.format(wallet.balance)}',
                             style: const TextStyle(fontSize: 12, color: AppTheme.textMedium),
                           ),
                         ],
@@ -376,7 +377,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text('Service Base Price', style: TextStyle(fontSize: 13, color: AppTheme.textMedium)),
-                        Text('₹${basePrice.toStringAsFixed(2)}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                        Text(PriceFormatter.format(basePrice), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
                       ],
                     ),
                     const SizedBox(height: 6),
@@ -384,7 +385,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text('GST Taxes (5%)', style: TextStyle(fontSize: 13, color: AppTheme.textMedium)),
-                        Text('₹${tax.toStringAsFixed(2)}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                        Text(PriceFormatter.format(tax), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
                       ],
                     ),
                     const SizedBox(height: 6),
@@ -392,7 +393,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text('Doorstep Convenience Fee', style: TextStyle(fontSize: 13, color: AppTheme.textMedium)),
-                        Text('₹49.00', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                        Text('₹49', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
                       ],
                     ),
                     if (walletDeduction > 0) ...[
@@ -401,7 +402,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           const Text('Wallet Balance Applied', style: TextStyle(fontSize: 13, color: AppTheme.successGreen, fontWeight: FontWeight.w600)),
-                          Text('-₹${walletDeduction.toStringAsFixed(2)}', style: const TextStyle(fontSize: 13, color: AppTheme.successGreen, fontWeight: FontWeight.w700)),
+                          Text('- ${PriceFormatter.format(walletDeduction)}', style: const TextStyle(fontSize: 13, color: AppTheme.successGreen, fontWeight: FontWeight.w700)),
                         ],
                       ),
                     ],
@@ -410,7 +411,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text('Total Net Payable', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppTheme.textDark)),
-                        Text('₹${netPayable.toStringAsFixed(2)}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: AppTheme.primaryBlue)),
+                        Text(PriceFormatter.format(netPayable), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: AppTheme.primaryBlue)),
                       ],
                     ),
                   ],

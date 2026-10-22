@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/payout_provider.dart';
 import '../../config/app_theme.dart';
+import '../../config/price_formatter.dart';
 import '../../widgets/status_badge.dart';
 
 class ProviderEarningsScreen extends StatefulWidget {
@@ -139,7 +140,7 @@ class _ProviderEarningsScreenState extends State<ProviderEarningsScreen> {
                     const Text('Total Net Earnings (85% Partner Share)', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12)),
                     const SizedBox(height: 4),
                     Text(
-                      '₹${payout.totalEarnings.toStringAsFixed(2)}',
+                      PriceFormatter.formatWithDecimals(payout.totalEarnings),
                       style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w900),
                     ),
                     const Divider(color: Color(0xFF334155), height: 24),
@@ -152,7 +153,7 @@ class _ProviderEarningsScreenState extends State<ProviderEarningsScreen> {
                             const Text('Available to Withdraw', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 11)),
                             const SizedBox(height: 2),
                             Text(
-                              '₹${payout.withdrawable.toStringAsFixed(2)}',
+                              PriceFormatter.formatWithDecimals(payout.withdrawable),
                               style: const TextStyle(color: Color(0xFF4ADE80), fontSize: 18, fontWeight: FontWeight.w800),
                             ),
                           ],
@@ -201,7 +202,7 @@ class _ProviderEarningsScreenState extends State<ProviderEarningsScreen> {
                     return ListTile(
                       contentPadding: const EdgeInsets.symmetric(vertical: 4),
                       title: Text(
-                        '₹${item.amount.toStringAsFixed(2)}',
+                        PriceFormatter.formatWithDecimals(item.amount),
                         style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
                       ),
                       subtitle: Text(
